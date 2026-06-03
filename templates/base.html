@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AuraHabit - Modern Glassmorphic Habit Tracker{% endblock %}</title>
+    <!-- Outfit & Inter Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Premium CSS stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Premium Ambient Lighting Background Effects -->
+    <div class="ambient-glow purple-glow"></div>
+    <div class="ambient-glow blue-glow"></div>
+    <div class="ambient-glow pink-glow"></div>
+
+    <div class="app-wrapper">
+        <!-- Dashboard Premium Header -->
+        <header class="app-navbar">
+            <div class="brand">
+                <span class="brand-logo">✨</span>
+                <div class="brand-text">
+                    <h1 class="brand-name">AuraHabit</h1>
+                    <p class="brand-tagline">Achieve consistency. Build streaks.</p>
+                </div>
+            </div>
+            <nav class="nav-controls">
+                <button class="btn btn-sm btn-glass" id="btn-export-data">
+                    <i data-lucide="download"></i> Export Data
+                </button>
+                <div class="date-selector">
+                    <span class="date-label">Sandbox Time:</span>
+                    <input type="date" id="sandbox-date-input" class="form-input-date">
+                </div>
+            </nav>
+        </header>
+
+        <!-- Main Dashboard Layout -->
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>&copy; 2026 AuraHabit Backend API. All systems operational. Designed for peak cognitive performance.</p>
+        </footer>
+    </div>
+
+    <!-- Toast Notification System -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script>
+        // Global Toast System helper
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toast-container");
+            if (!container) return;
+
+            const toast = document.createElement("div");
+            toast.className = `toast ${type}`;
+
+            let icon = "check-circle";
+            if (type === "error" || type === "danger") icon = "alert-circle";
+            else if (type === "warning") icon = "help-circle";
+            else if (type === "info") icon = "info";
+
+            toast.innerHTML = `
+                <i class="toast-icon" data-lucide="${icon}"></i>
+                <div class="toast-message">${message}</div>
+            `;
+
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            // Animate In
+            setTimeout(() => toast.classList.add("show"), 10);
+
+            // Auto Remove
+            setTimeout(() => {
+                toast.classList.remove("show");
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        }
+
+        // Initialize icons
+        document.addEventListener("DOMContentLoaded", () => {
+            lucide.createIcons();
+            
+            // Set sandbox input date to today by default
+            const dateInput = document.getElementById("sandbox-date-input");
+            if (dateInput) {
+                const today = new Date();
+                const localStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+                dateInput.value = localStr;
+                
+                // Save default sandbox date if not set
+                if (!localStorage.getItem("sandbox_date")) {
+                    localStorage.setItem("sandbox_date", localStr);
+                } else {
+                    dateInput.value = localStorage.getItem("sandbox_date");
+                }
+                
+                // Listen for changes
+                dateInput.addEventListener("change", (e) => {
+                    localStorage.setItem("sandbox_date", e.target.value);
+                    showToast("Sandbox day updated! Reloading...", "info");
+                    setTimeout(() => window.location.reload(), 800);
+                });
+            }
+
+            // Export habits logic
+            const btnExport = document.getElementById("btn-export-data");
+            if (btnExport) {
+                btnExport.addEventListener("click", () => {
+                    const date = localStorage.getItem("sandbox_date") || "";
+                    window.location.href = `/api/habits/export?date=${date}`;
+                });
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

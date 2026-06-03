@@ -1,0 +1,1113 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AuraHabit Tracker{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- COLUMN 1: Habits Management & Leaderboard (Left Area, takes 8 columns) -->
+    <div class="dashboard-main">
+        <!-- Dashboard Statistics Overview -->
+        <section class="stats-grid" id="stats-container">
+            <div class="stats-card glass">
+                <div class="stats-card-header">
+                    <span class="stats-label">Active Habits</span>
+                    <i data-lucide="target" class="text-indigo"></i>
+                </div>
+                <div class="stats-value" id="stat-total-habits">-</div>
+                <div class="stats-subtext">Currently tracking</div>
+            </div>
+            
+            <div class="stats-card glass">
+                <div class="stats-card-header">
+                    <span class="stats-label">Completed Today</span>
+                    <i data-lucide="check-square" class="text-emerald"></i>
+                </div>
+                <div class="stats-value" id="stat-completed-today">-</div>
+                <div class="stats-subtext" id="stat-completed-sub">- completed today</div>
+            </div>
+
+            <div class="stats-card glass">
+                <div class="stats-card-header">
+                    <span class="stats-label">Today's Aura</span>
+                    <i data-lucide="sparkles" class="text-purple"></i>
+                </div>
+                <div class="stats-value" id="stat-completion-rate">-</div>
+                <div class="stats-subtext">Overall consistency today</div>
+            </div>
+
+            <div class="stats-card glass">
+                <div class="stats-card-header">
+                    <span class="stats-label">Consistency Champion</span>
+                    <i data-lucide="award" class="text-amber"></i>
+                </div>
+                <div class="stats-value text-truncate" id="stat-consistent-habit" style="font-size: 1.25rem; font-weight: 700; margin-top: 10px; height: 35px; line-height:35px;">None</div>
+                <div class="stats-subtext" id="stat-consistent-details">- streak achieved</div>
+            </div>
+        </section>
+
+        <!-- Main Panel Tab Switcher -->
+        <div class="dashboard-tabs glass">
+            <button class="tab-panel-btn active" id="tab-btn-routine">
+                <i data-lucide="layout-grid"></i> Daily Routine
+            </button>
+            <button class="tab-panel-btn" id="tab-btn-insights">
+                <i data-lucide="bar-chart-2"></i> Aura Insights
+            </button>
+            <button class="tab-panel-btn" id="tab-btn-coach">
+                <i data-lucide="brain-circuit"></i> Aura Coach
+            </button>
+        </div>
+
+        <!-- DAILY ROUTINE PANEL -->
+        <div class="tab-panel active" id="panel-routine">
+            <!-- Category Tabs & Controls -->
+            <div class="content-controls glass">
+                <div class="category-tabs" id="category-tabs-container">
+                    <button class="tab-btn active" data-category="All">All</button>
+                    <button class="tab-btn" data-category="Health">Health</button>
+                    <button class="tab-btn" data-category="Fitness">Fitness</button>
+                    <button class="tab-btn" data-category="Reading">Reading</button>
+                    <button class="tab-btn" data-category="Study">Study</button>
+                    <button class="tab-btn" data-category="Work">Work</button>
+                    <button class="tab-btn" data-category="Personal">Personal</button>
+                    <button class="tab-btn" data-category="Other">Other</button>
+                </div>
+                <button class="btn btn-primary btn-sm" id="btn-open-create-modal">
+                    <i data-lucide="plus"></i> Add Habit
+                </button>
+            </div>
+
+            <!-- Habits Dynamic Listing -->
+            <div class="habits-section">
+                <h2 class="section-title">Your Daily Routine</h2>
+                <div class="habits-container" id="habits-list">
+                    <!-- Loading State -->
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading your routine...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AURA INSIGHTS PANEL (hidden by default) -->
+        <div class="tab-panel" id="panel-insights" style="display: none;">
+            <!-- Heatmap Section -->
+            <section class="insights-section glass">
+                <h3 class="widget-title">
+                    <i data-lucide="calendar-range" class="text-indigo"></i> Aura Flow Heatmap
+                </h3>
+                <p class="section-subtitle">Your completion consistency over the last 15 weeks.</p>
+                <div class="heatmap-wrapper">
+                    <div class="heatmap-y-labels">
+                        <span>Sun</span>
+                        <span>Tue</span>
+                        <span>Thu</span>
+                        <span>Sat</span>
+                    </div>
+                    <div class="heatmap-scroll-container">
+                        <div class="heatmap-grid" id="heatmap-grid-container">
+                            <!-- Heatmap cells rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Heatmap Legend -->
+                <div class="heatmap-legend">
+                    <span>Less</span>
+                    <div class="legend-box cell-lvl-0"></div>
+                    <div class="legend-box cell-lvl-1"></div>
+                    <div class="legend-box cell-lvl-2"></div>
+                    <div class="legend-box cell-lvl-3"></div>
+                    <div class="legend-box cell-lvl-4"></div>
+                    <span>More</span>
+                </div>
+            </section>
+
+            <!-- Interactive Charts Grid -->
+            <section class="charts-grid">
+                <div class="chart-card glass">
+                    <h3 class="widget-title"><i data-lucide="pie-chart" class="text-emerald"></i> Category Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card glass">
+                    <h3 class="widget-title"><i data-lucide="trending-up" class="text-indigo"></i> 14-Day Completion Trend</h3>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Achievements & Badges Panel -->
+            <section class="insights-section glass">
+                <h3 class="widget-title">
+                    <i data-lucide="award" class="text-amber"></i> Achievement Badges
+                </h3>
+                <p class="section-subtitle">Level up and maintain streaks to unlock achievements.</p>
+                <div class="badges-grid" id="badges-container">
+                    <!-- Badges cards rendered dynamically -->
+                </div>
+            </section>
+        </div>
+
+        <!-- AURA COACH AI PANEL (hidden by default) -->
+        <div class="tab-panel" id="panel-coach" style="display: none;">
+            <!-- AI Coach Section -->
+            <section class="insights-section glass">
+                <h3 class="widget-title">
+                    <i data-lucide="brain-circuit" class="text-purple"></i> Aura AI Coach
+                </h3>
+                <p class="section-subtitle">Consult your AI companion for motivation and habit guidance.</p>
+                
+                <div class="chat-wrapper">
+                    <div class="chat-messages" id="chat-messages-container">
+                        <!-- Welcoming assistant message -->
+                        <div class="chat-message assistant">
+                            <div class="chat-avatar">✨</div>
+                            <div class="chat-bubble">
+                                Greetings, fellow builder. I am your Aura Coach. What routine or habit goals are we striving to master today?
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form id="chat-input-form" class="chat-input-row">
+                        <input type="text" id="chat-user-input" class="form-input" placeholder="Ask about routines, procrastination, or motivation..." required autocomplete="off">
+                        <button type="submit" class="btn btn-primary" id="btn-send-message">
+                            <i data-lucide="send"></i> Send
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- COLUMN 2: Sidebar Analytics, Leaderboard & Reminders (Right Area, takes 4 columns) -->
+    <aside class="dashboard-sidebar">
+        <!-- Aura XP Level Card -->
+        <div class="sidebar-widget level-card glass">
+            <h3 class="widget-title">
+                <i data-lucide="sparkles" class="text-purple"></i> Your Aura Power
+            </h3>
+            <div class="level-badge-container">
+                <div class="level-circle-glow">
+                    <span class="level-title">LEVEL</span>
+                    <span class="level-number" id="level-display">-</span>
+                </div>
+            </div>
+            <div class="xp-progress-section">
+                <div class="xp-text">
+                    <span class="xp-current" id="xp-display">- XP</span>
+                    <span class="xp-needed" id="xp-needed-display">Next Level: - XP</span>
+                </div>
+                <div class="xp-bar-container">
+                    <div class="xp-bar-fill" id="xp-bar-fill" style="width: 0%"></div>
+                </div>
+                <p class="xp-subtext">Check in daily & unlock badges to gain XP!</p>
+            </div>
+        </div>
+
+        <!-- 7-Day Weekly Analytics Grid -->
+        <div class="sidebar-widget glass">
+            <h3 class="widget-title">
+                <i data-lucide="calendar"></i> Weekly Consistency
+            </h3>
+            <div class="weekly-chart" id="weekly-chart-container">
+                <!-- Weekly bars rendered dynamically -->
+            </div>
+        </div>
+
+        <!-- Streaks Leaderboard -->
+        <div class="sidebar-widget glass">
+            <h3 class="widget-title">
+                <i data-lucide="crown" class="text-amber"></i> Streak Leaderboard
+            </h3>
+            <div class="leaderboard-list" id="leaderboard-container">
+                <!-- Ranked leaderboard rows -->
+            </div>
+        </div>
+
+        <!-- Daily Simulated Reminders Capsule -->
+        <div class="sidebar-widget glass">
+            <div class="widget-header-flex">
+                <h3 class="widget-title">
+                    <i data-lucide="bell" class="text-purple"></i> Smart Reminders
+                </h3>
+                <span class="pulse-indicator" id="reminder-pulse"></span>
+            </div>
+            <div class="reminders-list" id="reminders-container">
+                <!-- Dynamic reminders list -->
+            </div>
+        </div>
+    </aside>
+</div>
+
+<!-- CREATE HABIT MODAL OVERLAY -->
+<div class="modal-overlay" id="create-habit-modal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3><i data-lucide="plus-circle" class="text-indigo"></i> Build a New Habit</h3>
+            <button class="modal-close" id="btn-close-create-modal">&times;</button>
+        </div>
+        <form id="create-habit-form" class="modal-body">
+            <div class="form-group">
+                <label for="habit-name" class="form-label">Habit Name</label>
+                <input type="text" id="habit-name" class="form-input" placeholder="e.g. Drink 3L Water, Study LeetCode" required>
+            </div>
+            <div class="form-group">
+                <label for="habit-description" class="form-label">Description</label>
+                <textarea id="habit-description" class="form-textarea" placeholder="Describe your goal, schedule, or notes..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="habit-category" class="form-label">Category</label>
+                <select id="habit-category" class="form-select">
+                    <option value="Health">Health</option>
+                    <option value="Fitness">Fitness</option>
+                    <option value="Reading">Reading</option>
+                    <option value="Study">Study</option>
+                    <option value="Work">Work</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Other" selected>Other</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-create-modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Habit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- EDIT HABIT MODAL OVERLAY -->
+<div class="modal-overlay" id="edit-habit-modal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3><i data-lucide="edit-3" class="text-indigo"></i> Refine Your Habit</h3>
+            <button class="modal-close" id="btn-close-edit-modal">&times;</button>
+        </div>
+        <form id="edit-habit-form" class="modal-body">
+            <input type="hidden" id="edit-habit-id">
+            <div class="form-group">
+                <label for="edit-habit-name" class="form-label">Habit Name</label>
+                <input type="text" id="edit-habit-name" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label for="edit-habit-description" class="form-label">Description</label>
+                <textarea id="edit-habit-description" class="form-textarea"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="edit-habit-category" class="form-label">Category</label>
+                <select id="edit-habit-category" class="form-select">
+                    <option value="Health">Health</option>
+                    <option value="Fitness">Fitness</option>
+                    <option value="Reading">Reading</option>
+                    <option value="Study">Study</option>
+                    <option value="Work">Work</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-edit-modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // State Tracking
+    let allHabits = [];
+    let activeFilter = 'All';
+    let chatHistory = [];
+
+    // Retrieve active sandbox date
+    function getSandboxDate() {
+        return localStorage.getItem("sandbox_date") || new Date().toISOString().split('T')[0];
+    }
+
+    // Refresh Dashboard Data
+    async function refreshDashboard() {
+        const date = getSandboxDate();
+        
+        try {
+            // Parallel requests for all widgets
+            const [dashboardRes, analyticsRes, leaderboardRes, remindersRes] = await Promise.all([
+                fetch(`/api/dashboard?date=${date}`),
+                fetch(`/api/analytics?date=${date}`),
+                fetch(`/api/leaderboard?date=${date}`),
+                fetch(`/api/reminders/simulate?date=${date}`)
+            ]);
+
+            const dashboardData = await dashboardRes.json();
+            const analyticsData = await analyticsRes.json();
+            const leaderboardData = await leaderboardRes.json();
+            const remindersData = await remindersRes.json();
+
+            if (dashboardData.status === "success") {
+                allHabits = dashboardData.data;
+                renderHabits();
+                updateStats(analyticsData.data);
+                renderWeeklySummary(analyticsData.data.weekly_summary);
+                renderLeaderboard(leaderboardData.data);
+                renderReminders(remindersData.data);
+                
+                // Update upgraded widgets
+                updateLevelCard(analyticsData.data.gamification);
+                renderHeatmap(analyticsData.data.heatmap_data);
+                renderBadges(analyticsData.data.gamification.badges);
+                updateCharts(analyticsData.data, allHabits);
+            } else {
+                showToast("Failed to fetch dashboard data.", "error");
+            }
+        } catch (error) {
+            console.error("Dashboard error:", error);
+            showToast("Connection to backend lost.", "error");
+        }
+    }
+
+    // Render Habits Grid
+    function renderHabits() {
+        const habitsList = document.getElementById("habits-list");
+        if (!habitsList) return;
+
+        // Filter habits
+        const filteredHabits = activeFilter === 'All' 
+            ? allHabits 
+            : allHabits.filter(h => h.category === activeFilter);
+
+        if (filteredHabits.length === 0) {
+            habitsList.innerHTML = `
+                <div class="empty-state glass">
+                    <i class="empty-icon" data-lucide="compass"></i>
+                    <p class="empty-title">No habits found here</p>
+                    <p class="empty-subtitle">${activeFilter === 'All' ? 'Start your day by creating a habit!' : `No active habits in category "${activeFilter}"`}</p>
+                    ${activeFilter === 'All' ? '<button class="btn btn-primary btn-sm mt-3" id="btn-empty-add"><i data-lucide="plus"></i> Add Habit</button>' : ''}
+                </div>
+            `;
+            lucide.createIcons();
+            
+            // Add listener to empty button if present
+            const emptyAdd = document.getElementById("btn-empty-add");
+            if (emptyAdd) {
+                emptyAdd.addEventListener("click", () => {
+                    document.getElementById("create-habit-modal").classList.add("active");
+                });
+            }
+            return;
+        }
+
+        habitsList.innerHTML = filteredHabits.map(h => {
+            const completed = h.completed_today;
+            const categoryClass = `cat-${h.category.toLowerCase()}`;
+            
+            return `
+                <div class="habit-item glass ${completed ? 'completed' : ''}" data-id="${h.id}">
+                    <div class="habit-details">
+                        <div class="habit-meta-top">
+                            <span class="category-badge ${categoryClass}">${h.category}</span>
+                            <span class="creation-date"><i data-lucide="clock" class="icon-inline"></i> Created ${h.created_at}</span>
+                        </div>
+                        <h3 class="habit-title text-truncate" title="${h.name}">${h.name}</h3>
+                        <p class="habit-desc text-truncate" title="${h.description}">${h.description || 'No description provided.'}</p>
+                        
+                        <!-- Streaks capsules -->
+                        <div class="streaks-capsules">
+                            <span class="streak-badge current" title="Current Active Streak">
+                                <i data-lucide="flame" class="icon-flame text-indigo"></i>
+                                <strong>${h.streak_current}</strong> days active
+                            </span>
+                            <span class="streak-badge longest" title="Longest Achieved Streak">
+                                <i data-lucide="trophy" class="icon-trophy text-amber"></i>
+                                <strong>${h.streak_longest}</strong> max streak
+                            </span>
+                            <span class="streak-badge total" title="Total Completions">
+                                <i data-lucide="check-circle" class="icon-check text-emerald"></i>
+                                <strong>${h.total_checkins}</strong> checks
+                            </span>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="progress-section">
+                            <div class="progress-text">
+                                <span>Aura Strength</span>
+                                <strong>${h.completion_percentage}%</strong>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" style="width: ${h.completion_percentage}%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="habit-actions-wrapper">
+                        <!-- Check In Action -->
+                        <button class="btn btn-checkin ${completed ? 'completed' : 'pending'}" 
+                                onclick="checkIn('${h.id}')" 
+                                ${completed ? 'disabled' : ''}>
+                            <i data-lucide="${completed ? 'check' : 'circle'}"></i>
+                            <span>${completed ? 'Completed' : 'Check In'}</span>
+                        </button>
+
+                        <!-- Edit & Delete Utilities -->
+                        <div class="action-buttons">
+                            <button class="action-btn btn-edit" onclick="openEditModal('${h.id}', '${escapeHtml(h.name)}', '${escapeHtml(h.description)}', '${h.category}')" title="Modify Habit">
+                                <i data-lucide="edit-3"></i>
+                            </button>
+                            <button class="action-btn btn-delete" onclick="deleteHabit('${h.id}')" title="Delete Habit">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        lucide.createIcons();
+    }
+
+    // Update Statistics Card values
+    function updateStats(data) {
+        document.getElementById("stat-total-habits").textContent = data.total_habits;
+        document.getElementById("stat-completed-today").textContent = data.completed_today;
+        document.getElementById("stat-completed-sub").textContent = `${data.completed_today} / ${data.total_habits} completed today`;
+        document.getElementById("stat-completion-rate").textContent = `${data.daily_completion_rate}%`;
+
+        const championVal = document.getElementById("stat-consistent-habit");
+        const championDet = document.getElementById("stat-consistent-details");
+        
+        if (data.most_consistent_habit) {
+            championVal.textContent = data.most_consistent_habit.name;
+            championDet.textContent = `🔥 ${data.most_consistent_habit.streak_longest} day longest streak achieved`;
+        } else {
+            championVal.textContent = "None yet";
+            championDet.textContent = "Complete habits to achieve records!";
+        }
+    }
+
+    // Render 7-Day Compliance summary
+    function renderWeeklySummary(summary) {
+        const chart = document.getElementById("weekly-chart-container");
+        if (!chart) return;
+
+        if (!summary || summary.length === 0) {
+            chart.innerHTML = `<div class="empty-sub text-center py-4">No data available</div>`;
+            return;
+        }
+
+        chart.innerHTML = summary.map(day => {
+            const isToday = day.date === getSandboxDate();
+            return `
+                <div class="weekly-column ${isToday ? 'is-today' : ''}">
+                    <div class="weekly-column-fill-wrapper">
+                        <div class="weekly-column-fill" style="height: ${day.percentage}%" title="${day.completed_count}/${day.total_count} habits (${day.percentage}%)"></div>
+                    </div>
+                    <span class="weekly-day-label">${day.day_name}</span>
+                    <span class="weekly-date-label">${day.date.substring(8, 10)}</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Render ranked leaderboard in sidebar
+    function renderLeaderboard(data) {
+        const container = document.getElementById("leaderboard-container");
+        if (!container) return;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `<div class="empty-sub py-3">No ranked habits.</div>`;
+            return;
+        }
+
+        // Limit to top 5
+        const topFive = data.slice(0, 5);
+
+        container.innerHTML = topFive.map((h, i) => {
+            let rankBadge = `<span class="rank-num">${h.rank}</span>`;
+            if (h.rank === 1) rankBadge = `<span class="rank-crown medal-gold">🥇</span>`;
+            else if (h.rank === 2) rankBadge = `<span class="rank-crown medal-silver">🥈</span>`;
+            else if (h.rank === 3) rankBadge = `<span class="rank-crown medal-bronze">🥉</span>`;
+
+            return `
+                <div class="leaderboard-item">
+                    <div class="leaderboard-left">
+                        ${rankBadge}
+                        <div class="leaderboard-details">
+                            <span class="leaderboard-name text-truncate">${h.name}</span>
+                            <span class="category-badge cat-${h.category.toLowerCase()} badge-xxs">${h.category}</span>
+                        </div>
+                    </div>
+                    <div class="leaderboard-right">
+                        <span class="leaderboard-streak"><i data-lucide="flame"></i> ${h.streak_current}d</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        lucide.createIcons();
+    }
+
+    // Render reminders simulator in sidebar
+    function renderReminders(data) {
+        const container = document.getElementById("reminders-container");
+        const pulse = document.getElementById("reminder-pulse");
+        if (!container) return;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `
+                <div class="empty-reminders">
+                    <i data-lucide="smile"></i>
+                    <p>All routines completed! You are fully aligned.</p>
+                </div>
+            `;
+            if (pulse) pulse.classList.remove("active");
+            lucide.createIcons();
+            return;
+        }
+
+        if (pulse) pulse.classList.add("active");
+
+        container.innerHTML = data.map(rem => {
+            return `
+                <div class="reminder-capsule border-${rem.category.toLowerCase()}">
+                    <div class="reminder-header-row">
+                        <span class="reminder-icon-badge cat-${rem.category.toLowerCase()}"><i data-lucide="bell"></i></span>
+                        <strong class="reminder-habit-name text-truncate">${rem.name}</strong>
+                    </div>
+                    <p class="reminder-text">${rem.message}</p>
+                    <button class="btn btn-xxs btn-checkin-rem" onclick="checkIn('${rem.id}')">
+                        <i data-lucide="zap"></i> Quick Check In
+                    </button>
+                </div>
+            `;
+        }).join('');
+        lucide.createIcons();
+    }
+
+    // Perform Check-in
+    async function checkIn(habitId) {
+        const date = getSandboxDate();
+        
+        try {
+            const response = await fetch(`/api/habits/${habitId}/checkin`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ date: date })
+            });
+
+            const result = await response.json();
+            if (result.status === "success") {
+                showToast(result.message, "success");
+                refreshDashboard();
+            } else {
+                showToast(result.message, "error");
+            }
+        } catch (error) {
+            console.error("Check-in error:", error);
+            showToast("Failed to connect to backend check-in service.", "error");
+        }
+    }
+
+    // Delete Habit
+    async function deleteHabit(habitId) {
+        if (!confirm("Are you absolutely sure you want to delete this habit? All check-ins and streaks will be permanently erased.")) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/habits/${habitId}`, {
+                method: "DELETE"
+            });
+
+            const result = await response.json();
+            if (result.status === "success") {
+                showToast(result.message, "success");
+                refreshDashboard();
+            } else {
+                showToast(result.message, "error");
+            }
+        } catch (error) {
+            console.error("Delete error:", error);
+            showToast("Connection failure during deletion.", "error");
+        }
+    }
+
+    // Open Edit Habit Modal
+    function openEditModal(id, name, description, category) {
+        document.getElementById("edit-habit-id").value = id;
+        document.getElementById("edit-habit-name").value = name;
+        document.getElementById("edit-habit-description").value = description;
+        document.getElementById("edit-habit-category").value = category;
+        
+        document.getElementById("edit-habit-modal").classList.add("active");
+    }
+
+    // Helper to escape HTML and prevent inject bugs
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // Dynamic Upgrade: Level Card update helper
+    function updateLevelCard(gamification) {
+        document.getElementById("level-display").textContent = gamification.level;
+        document.getElementById("xp-display").textContent = `${gamification.xp} XP`;
+        document.getElementById("xp-needed-display").textContent = `Next Level: ${gamification.xp_for_next_level} XP`;
+        document.getElementById("xp-bar-fill").style.width = `${gamification.progress_percentage}%`;
+    }
+
+    // Dynamic Upgrade: GitHub Heatmap renderer
+    function renderHeatmap(heatmapData) {
+        const container = document.getElementById("heatmap-grid-container");
+        if (!container) return;
+
+        if (!heatmapData || heatmapData.length === 0) {
+            container.innerHTML = "<div class='empty-sub'>No heatmap data available.</div>";
+            return;
+        }
+
+        let html = "";
+        
+        // Pad the start of the first week if it doesn't start on Sunday (day_of_week = 0)
+        const firstDayOfWeek = heatmapData[0].day_of_week;
+        for (let i = 0; i < firstDayOfWeek; i++) {
+            html += `<div class="heatmap-cell cell-empty"></div>`;
+        }
+
+        // Render actual cells
+        heatmapData.forEach(day => {
+            const intensityClass = `cell-lvl-${day.intensity}`;
+            const tooltipText = `${day.date} (${day.day_name}): ${day.completed_count} completed`;
+            
+            html += `
+                <div class="heatmap-cell ${intensityClass}" 
+                     title="${tooltipText}"
+                     data-date="${day.date}">
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    // Dynamic Upgrade: Badges renderer
+    function renderBadges(badges) {
+        const container = document.getElementById("badges-container");
+        if (!container) return;
+
+        container.innerHTML = badges.map(badge => {
+            const statusClass = badge.unlocked ? 'unlocked' : 'locked';
+            return `
+                <div class="badge-card glass ${statusClass}">
+                   <div class="badge-icon-wrapper">
+                       <i data-lucide="${badge.icon}" class="badge-icon"></i>
+                   </div>
+                   <div class="badge-info">
+                       <h4 class="badge-name">${badge.name}</h4>
+                       <p class="badge-desc">${badge.description}</p>
+                       <span class="badge-status-pill">${badge.unlocked ? '✨ Unlocked (+100 XP)' : '🔒 Locked'}</span>
+                   </div>
+                </div>
+            `;
+        }).join('');
+        lucide.createIcons();
+    }
+
+    // Dynamic Upgrade: Interactive Chart.js visualizer
+    let categoryChartInstance = null;
+    let trendChartInstance = null;
+
+    function updateCharts(analytics, habits) {
+        const categoryCanvas = document.getElementById("categoryChart");
+        const trendCanvas = document.getElementById("trendChart");
+        if (!categoryCanvas || !trendCanvas) return;
+
+        const categoryCtx = categoryCanvas.getContext("2d");
+        const trendCtx = trendCanvas.getContext("2d");
+        if (!categoryCtx || !trendCtx) return;
+
+        // 1. Calculate Category distribution
+        const categories = ["Health", "Study", "Fitness", "Reading", "Work", "Personal", "Other"];
+        const categoryCounts = categories.map(cat => habits.filter(h => h.category === cat).length);
+        
+        // Premium HSL values translated to HEX
+        const categoryColors = [
+            '#10b981', // Health
+            '#06b6d4', // Study
+            '#f43f5e', // Fitness
+            '#f59e0b', // Reading
+            '#8b5cf6', // Work
+            '#ec4899', // Personal
+            '#94a3b8'  // Other
+        ];
+
+        // Destroy previous charts to avoid overlays
+        if (categoryChartInstance) categoryChartInstance.destroy();
+        if (trendChartInstance) trendChartInstance.destroy();
+
+        // Build Doughnut Chart
+        categoryChartInstance = new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: categories,
+                datasets: [{
+                    data: categoryCounts,
+                    backgroundColor: categoryColors.map(c => c + '22'),
+                    borderColor: categoryColors,
+                    borderWidth: 1.5,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#94a3b8',
+                            boxWidth: 10,
+                            font: { family: 'Inter', size: 10 }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 2. Build 14-Day Trend line chart
+        const trendData = analytics.heatmap_data.slice(-14);
+        const trendLabels = trendData.map(d => d.date.substring(5)); // MM-DD
+        const trendRates = trendData.map(d => d.percentage);
+
+        trendChartInstance = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Consistency (%)',
+                    data: trendRates,
+                    borderColor: '#a855f7',
+                    backgroundColor: 'rgba(168, 85, 247, 0.08)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: '#6366f1',
+                    pointBorderColor: '#ffffff',
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 100,
+                        grid: { color: 'rgba(255, 255, 255, 0.03)' },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { family: 'Inter', size: 10 }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { family: 'Inter', size: 10 }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    // Event Listeners Setup
+    document.addEventListener("DOMContentLoaded", () => {
+        // Tab switching panel logic
+        const tabBtnRoutine = document.getElementById("tab-btn-routine");
+        const tabBtnInsights = document.getElementById("tab-btn-insights");
+        const tabBtnCoach = document.getElementById("tab-btn-coach");
+        const panelRoutine = document.getElementById("panel-routine");
+        const panelInsights = document.getElementById("panel-insights");
+        const panelCoach = document.getElementById("panel-coach");
+
+        let activePanel = "routine";
+
+        if (tabBtnRoutine && tabBtnInsights && tabBtnCoach && panelRoutine && panelInsights && panelCoach) {
+            tabBtnRoutine.addEventListener("click", () => {
+                tabBtnRoutine.classList.add("active");
+                tabBtnInsights.classList.remove("active");
+                tabBtnCoach.classList.remove("active");
+                panelRoutine.style.display = "block";
+                panelInsights.style.display = "none";
+                panelCoach.style.display = "none";
+                activePanel = "routine";
+            });
+
+            tabBtnInsights.addEventListener("click", () => {
+                tabBtnInsights.classList.add("active");
+                tabBtnRoutine.classList.remove("active");
+                tabBtnCoach.classList.remove("active");
+                panelRoutine.style.display = "none";
+                panelInsights.style.display = "block";
+                panelCoach.style.display = "none";
+                activePanel = "insights";
+                
+                // Redraw Chart.js charts on tab click
+                if (categoryChartInstance) categoryChartInstance.resize();
+                if (trendChartInstance) trendChartInstance.resize();
+            });
+
+            tabBtnCoach.addEventListener("click", () => {
+                tabBtnCoach.classList.add("active");
+                tabBtnRoutine.classList.remove("active");
+                tabBtnInsights.classList.remove("active");
+                panelRoutine.style.display = "none";
+                panelInsights.style.display = "none";
+                panelCoach.style.display = "block";
+                activePanel = "coach";
+            });
+        }
+        // Init fetch
+        refreshDashboard();
+
+        // Tabs category filtering
+        const tabsContainer = document.getElementById("category-tabs-container");
+        if (tabsContainer) {
+            tabsContainer.addEventListener("click", (e) => {
+                const target = e.target.closest(".tab-btn");
+                if (!target) return;
+
+                // Toggle active state
+                tabsContainer.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+                target.classList.add("active");
+
+                activeFilter = target.dataset.category;
+                renderHabits();
+            });
+        }
+
+        // Modals opening/closing triggers
+        const btnOpenCreate = document.getElementById("btn-open-create-modal");
+        const createModal = document.getElementById("create-habit-modal");
+        const btnCloseCreate = document.getElementById("btn-close-create-modal");
+        const btnCancelCreate = document.getElementById("btn-cancel-create-modal");
+
+        if (btnOpenCreate && createModal) {
+            btnOpenCreate.addEventListener("click", () => {
+                document.getElementById("create-habit-form").reset();
+                createModal.classList.add("active");
+            });
+        }
+
+        const closeCreate = () => createModal.classList.remove("active");
+        if (btnCloseCreate) btnCloseCreate.addEventListener("click", closeCreate);
+        if (btnCancelCreate) btnCancelCreate.addEventListener("click", closeCreate);
+
+        // Edit Modal triggers
+        const editModal = document.getElementById("edit-habit-modal");
+        const btnCloseEdit = document.getElementById("btn-close-edit-modal");
+        const btnCancelEdit = document.getElementById("btn-cancel-edit-modal");
+
+        const closeEdit = () => editModal.classList.remove("active");
+        if (btnCloseEdit) btnCloseEdit.addEventListener("click", closeEdit);
+        if (btnCancelEdit) btnCancelEdit.addEventListener("click", closeEdit);
+
+        // Create Habit Submit Form Handler
+        const createForm = document.getElementById("create-habit-form");
+        if (createForm) {
+            createForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const name = document.getElementById("habit-name").value;
+                const description = document.getElementById("habit-description").value;
+                const category = document.getElementById("habit-category").value;
+
+                try {
+                    const response = await fetch("/api/habits", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            description: description,
+                            category: category
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.status === "success") {
+                        showToast(result.message, "success");
+                        closeCreate();
+                        refreshDashboard();
+                    } else {
+                        showToast(result.message, "error");
+                    }
+                } catch (error) {
+                    console.error("Submit error:", error);
+                    showToast("Failed to connect to habit creation service.", "error");
+                }
+            });
+        }
+
+        // Edit Habit Submit Form Handler
+        const editForm = document.getElementById("edit-habit-form");
+        if (editForm) {
+            editForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const id = document.getElementById("edit-habit-id").value;
+                const name = document.getElementById("edit-habit-name").value;
+                const description = document.getElementById("edit-habit-description").value;
+                const category = document.getElementById("edit-habit-category").value;
+                const date = getSandboxDate();
+
+                try {
+                    const response = await fetch(`/api/habits/${id}?date=${date}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            description: description,
+                            category: category
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.status === "success") {
+                        showToast(result.message, "success");
+                        closeEdit();
+                        refreshDashboard();
+                    } else {
+                        showToast(result.message, "error");
+                    }
+                } catch (error) {
+                    console.error("Edit submit error:", error);
+                    showToast("Failed to connect to habit update service.", "error");
+                }
+            });
+        }
+
+        // AI Coach Chat Form Handler
+        const chatForm = document.getElementById("chat-input-form");
+        const chatInput = document.getElementById("chat-user-input");
+        const chatMessages = document.getElementById("chat-messages-container");
+
+        if (chatForm && chatInput && chatMessages) {
+            chatForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const userText = chatInput.value.trim();
+                if (!userText) return;
+
+                // Clear input
+                chatInput.value = "";
+
+                // 1. Render User Message
+                chatMessages.insertAdjacentHTML("beforeend", `
+                    <div class="chat-message user">
+                        <div class="chat-avatar">👤</div>
+                        <div class="chat-bubble">${escapeHtml(userText)}</div>
+                    </div>
+                `);
+                
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // 2. Render Loading State bubble
+                const loadingId = "coach-loading-" + Date.now();
+                chatMessages.insertAdjacentHTML("beforeend", `
+                    <div class="chat-message assistant" id="${loadingId}">
+                        <div class="chat-avatar">✨</div>
+                        <div class="chat-bubble loading-bubble">
+                            <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+                        </div>
+                    </div>
+                `);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                try {
+                    const response = await fetch("/api/coach/chat", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            message: userText,
+                            history: chatHistory
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    // Remove loading bubble
+                    document.getElementById(loadingId)?.remove();
+
+                    if (result.status === "success") {
+                        // Append to local history
+                        chatHistory.push({ role: "user", content: userText });
+                        chatHistory.push({ role: "assistant", content: result.content });
+                        
+                        if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+
+                        // Formulate Assistant Message bubble
+                        let bubbleHtml = `<div class="chat-bubble">${escapeHtml(result.content).replace(/\n/g, "<br>")}</div>`;
+                        
+                        // Render reasoning process if it exists
+                        if (result.reasoning) {
+                            bubbleHtml = `
+                                <div class="chat-bubble">
+                                    <details class="reasoning-toggle">
+                                        <summary>Thought Process</summary>
+                                        <div class="reasoning-text">${escapeHtml(result.reasoning).replace(/\n/g, "<br>")}</div>
+                                    </details>
+                                    <div class="assistant-content">${escapeHtml(result.content).replace(/\n/g, "<br>")}</div>
+                                </div>
+                            `;
+                        }
+
+                        chatMessages.insertAdjacentHTML("beforeend", `
+                            <div class="chat-message assistant">
+                                <div class="chat-avatar">✨</div>
+                                ${bubbleHtml}
+                            </div>
+                        `);
+                    } else {
+                        chatMessages.insertAdjacentHTML("beforeend", `
+                            <div class="chat-message assistant">
+                                <div class="chat-avatar">⚠️</div>
+                                <div class="chat-bubble error-bubble">
+                                    Sorry, I encountered an error: ${escapeHtml(result.message)}
+                                </div>
+                            </div>
+                        `);
+                    }
+                } catch (err) {
+                    console.error("Chat error:", err);
+                    document.getElementById(loadingId)?.remove();
+                    chatMessages.insertAdjacentHTML("beforeend", `
+                        <div class="chat-message assistant">
+                            <div class="chat-avatar">⚠️</div>
+                            <div class="chat-bubble error-bubble">
+                                Failed to establish communication with the Coach server.
+                            </div>
+                        </div>
+                    `);
+                }
+                
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,6 +1,20 @@
 # ✨ AuraHabit - Premium Glassmorphic Habit Tracker & AI Companion
 
-AuraHabit is a state-of-the-art **Habit Tracker** application built with a **Python & Flask** backend and a beautiful **Glassmorphic & Ambient-lit** frontend dashboard. It features robust streak engines, gamified XP leveling, visual analytics (including a GitHub-style heatmap), and a direct integration with a **Google Gemma-3 AI Coach** to guide user habits.
+AuraHabit is a state-of-the-art, gamified **Habit Tracker** application built with a **Python & Flask** backend and a beautiful **Glassmorphic & Ambient-lit** frontend dashboard. It features robust streak engines, gamified XP leveling, visual analytics (including a GitHub-style heatmap), and a direct integration with a **Google Gemma-3 AI Coach** to guide user habits.
+
+---
+
+## 🛠️ Latest Work Completed (Recent Updates & Deployment Fixes)
+
+We recently optimized this repository to support seamless local development, automated testing, and cloud deployment:
+
+1.  **Vercel Deployment Setup**:
+    *   **Created [vercel.json](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/vercel.json)**: Configured a serverless build specification that uses the `@vercel/python` builder to route all web traffic (`/(.*)`) to the Flask entrypoint [app.py](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/app.py). This successfully resolves the `404: NOT_FOUND` routing error on Vercel deployments.
+    *   **Created [requirements.txt](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/requirements.txt)**: Specified essential dependencies (`Flask`, `requests`, and `gunicorn`) with compatible versions to ensure clean builds in Vercel's cloud lambda environments.
+2.  **Automated QA and Validation**:
+    *   Executed the extensive unit test suite in [test_app.py](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/test_app.py) validating the core calendar calculations, gamification curves, REST endpoints, and mock chatbot interfaces. **All 20 tests pass successfully**.
+3.  **Agile Project Planning Framework**:
+    *   Structured the project backlog, user stories, epics, roadmaps, and acceptance criteria in the [agile_project_plan.md](file:///C:/Users/Sankari%20Sabarikanth/.gemini/antigravity-ide/brain/59b230c0-a7aa-4c39-97e3-9bb0ba88edcd/agile_project_plan.md) artifact, detailing how the software components align with Agile development sprints.
 
 ---
 
@@ -9,7 +23,7 @@ AuraHabit is a state-of-the-art **Habit Tracker** application built with a **Pyt
 ### 1. 📅 Aura Flow Heatmap (GitHub Style)
 *   **105-Day Completion Grid**: Visualizes your daily consistency over the last 15 weeks in a high-density contribution grid.
 *   **Intensity-Colored Cells**: Automatically highlights success rate percentages:
-    *   `cell-lvl-0`: 0% completed (empty)
+    *   `cell-lvl-0`: 0% completed (empty glass style)
     *   `cell-lvl-1`: 1% to 25% completed
     *   `cell-lvl-2`: 26% to 50% completed
     *   `cell-lvl-3`: 51% to 75% completed
@@ -40,19 +54,19 @@ AuraHabit is a state-of-the-art **Habit Tracker** application built with a **Pyt
 
 ---
 
-## 🛠️ Technical Architecture
+## 🛠️ Technical Architecture & Directory Structure
 
 The codebase is modularized according to industry standard best practices:
 
-*   **[`app.py`](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/app.py)**: Configures the Flask application, registers blueprints, and handles global HTTP error states.
-*   **[`routes/habit_routes.py`](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/routes/habit_routes.py)**: Contains the RESTful JSON endpoints serving habits CRUD, analytics, leaderboard, export, gamification levels, and chatbot endpoints.
-*   **[`services/habit_service.py`](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/services/habit_service.py)**: Service layer for habits creation, deletion, validation, and analytics compiling.
-*   **[`services/ai_service.py`](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/services/ai_service.py)**: Connects to the NVIDIA API gateway for generating gemma-3 responses.
-*   **[`storage.py`](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/storage.py)**: Thread-safe in-memory data storage guarded by a `threading.Lock`.
-*   **[`utils/date_utils.py`](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/utils/date_utils.py)**: Math and datetime logic for tracking progressions and active/longest streaks.
-*   **[`templates/base.html`](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/templates/base.html)**: Layout template importing Chart.js and Lucide icons, including the global timezone Sandbox Time.
-*   **[`templates/index.html`](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/templates/index.html)**: Main dashboard with tab toggles, Level Card metrics, habit check-ins, heatmap grid, and chat UI.
-*   **[`static/css/style.css`](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/static/css/style.css)**: Glassmorphism design tokens, animations, scrollbars, and chat bubble custom rules.
+*   **[app.py](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/app.py)**: Configures the Flask application, registers blueprints, and handles global HTTP error states.
+*   **[routes/habit_routes.py](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/routes/habit_routes.py)**: Contains the RESTful JSON endpoints serving habits CRUD, analytics, leaderboard, export, gamification levels, and chatbot endpoints.
+*   **[services/habit_service.py](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/services/habit_service.py)**: Service layer for habits creation, deletion, validation, and analytics compiling.
+*   **[services/ai_service.py](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/services/ai_service.py)**: Connects to the NVIDIA API gateway for generating gemma-3 responses.
+*   **[storage.py](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/storage.py)**: Thread-safe in-memory data storage guarded by a `threading.Lock` to ensure reliability in multi-threaded runtime environments like Vercel serverless functions.
+*   **[utils/date_utils.py](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/utils/date_utils.py)**: Math and datetime logic for tracking progressions and active/longest streaks.
+*   **[templates/base.html](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/templates/base.html)**: Layout template importing Chart.js and Lucide icons, including the global timezone Sandbox Time.
+*   **[templates/index.html](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/templates/index.html)**: Main dashboard with tab toggles, Level Card metrics, habit check-ins, heatmap grid, and chat UI.
+*   **[static/css/style.css](file:///c:/Users/Sankari%20Sabarikanth/Downloads/sankari/static/css/style.css)**: Glassmorphism design tokens, animations, scrollbars, and chat bubble custom rules.
 
 ---
 
@@ -78,7 +92,7 @@ The codebase is modularized according to industry standard best practices:
 ### 1. Install Requirements
 Ensure you have **Python 3.x** and the required libraries installed:
 ```bash
-pip install flask requests openai
+pip install -r requirements.txt
 ```
 
 ### 2. Start the Application

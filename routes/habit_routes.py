@@ -239,6 +239,7 @@ def ai_coach_chat():
     data = request.get_json() or {}
     message = data.get("message")
     history = data.get("history", [])
+    today_str = request.args.get("date") or data.get("date")
     
     if not message or not message.strip():
         return jsonify({
@@ -246,7 +247,7 @@ def ai_coach_chat():
             "message": "Message is required."
         }), 400
         
-    result = ai_service.get_ai_coach_response(message, chat_history=history)
+    result = ai_service.get_ai_coach_response(message, chat_history=history, today_str=today_str)
     if result["status"] == "error":
         return jsonify(result), 500
         

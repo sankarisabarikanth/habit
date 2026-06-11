@@ -35,8 +35,8 @@
                     <i data-lucide="download"></i> Export Data
                 </button>
                 <div class="date-selector">
-                    <span class="date-label">Sandbox Time:</span>
-                    <input type="date" id="sandbox-date-input" class="form-input-date">
+                    <span class="date-label">Real Time:</span>
+                    <span id="current-date-display" style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);"></span>
                 </div>
             </nav>
         </header>
@@ -91,34 +91,26 @@
         document.addEventListener("DOMContentLoaded", () => {
             lucide.createIcons();
             
-            // Set sandbox input date to today by default
-            const dateInput = document.getElementById("sandbox-date-input");
-            if (dateInput) {
+            // Set current date display and clear sandbox date
+            const dateDisplay = document.getElementById("current-date-display");
+            if (dateDisplay) {
                 const today = new Date();
-                const localStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-                dateInput.value = localStr;
                 
-                // Save default sandbox date if not set
-                if (!localStorage.getItem("sandbox_date")) {
-                    localStorage.setItem("sandbox_date", localStr);
-                } else {
-                    dateInput.value = localStorage.getItem("sandbox_date");
-                }
+                // Format date nicely (e.g. "Jun 11, 2026")
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                dateDisplay.textContent = today.toLocaleDateString('en-US', options);
                 
-                // Listen for changes
-                dateInput.addEventListener("change", (e) => {
-                    localStorage.setItem("sandbox_date", e.target.value);
-                    showToast("Sandbox day updated! Reloading...", "info");
-                    setTimeout(() => window.location.reload(), 800);
-                });
+                // Remove sandbox_date from localStorage to enforce real time
+                localStorage.removeItem("sandbox_date");
             }
 
             // Export habits logic
             const btnExport = document.getElementById("btn-export-data");
             if (btnExport) {
                 btnExport.addEventListener("click", () => {
-                    const date = localStorage.getItem("sandbox_date") || "";
-                    window.location.href = `/api/habits/export?date=${date}`;
+                    const today = new Date();
+                    const localStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+                    window.location.href = `/api/habits/export?date=${localStr}`;
                 });
             }
         });

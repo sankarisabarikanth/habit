@@ -1,6 +1,7 @@
 import secrets
 from flask import Flask, render_template, jsonify
 from routes.habit_routes import habit_api
+from routes.journal_routes import journal_api
 
 app = Flask(__name__)
 
@@ -9,6 +10,7 @@ app.secret_key = secrets.token_hex(24)
 
 # Register REST API Blueprints
 app.register_blueprint(habit_api, url_prefix="/api")
+app.register_blueprint(journal_api, url_prefix="/api")
 
 # Serve beautiful Premium Glassmorphic Web Dashboard
 @app.route("/")

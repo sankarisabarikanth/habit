@@ -413,5 +413,135 @@ class HabitTrackerTestCase(unittest.TestCase):
         response = self.client.post("/api/coach/chat", json={})
         self.assertEqual(response.status_code, 400)
 
+    # --- 5. Journal Feature Tests ---
+    def test_create_journal_success(self):
+        """Verify that a daily journal entry can be successfully created."""
+        # Setup: Create a habit first to link
+        h = service.create_habit("Daily Running", category="Fitness")
+        
+        payload = {
+            "date": "2026-06-09",
+            "title": "Feeling energetic",
+            "content": "Went for a 5k run in the morning.",
+            "mood": "Excellent",
+            "habit_ids": [h["id"]]
+        }
+        
+        response = self.client.post("/api/journals",
+                                    data=json.dumps(payload),
+                                    content_type="application/json")
+        self.assertEqual(response.status_code, 201)
+        res_data = json.loads(response.data)
+        self.assertEqual(res_data["status"], "success")
+        self.assertEqual(res_data["data"]["title"], "Feeling energetic")
+        self.assertEqual(res_data["data"]["mood"], "Excellent")
+        self.assertEqual(res_data["data"]["habit_ids"], [h["id"]])
+
+    def test_create_journal_duplicate_prevention(self):
+        """Ensure only one journal entry can exist per date."""
+        payload = {
+            "date": "2026-06-09",
+            "title": "Reflection 1",
+            "content": "First entry.",
+            "mood": "Good"
+        }
+        # First entry
+        response1 = self.client.post("/api/journals",
+                                     data=json.dumps(payload),
+                                     content_type="application/json")
+        self.assertEqual(response1.status_code, 201)
+        
+        # Second entry on the same date
+        payload2 = {
+            "date": "2026-06-09",
+            "title": "Reflection 2",
+            "content": "Second entry attempt.",
+            "mood": "Neutral"
+        }
+        response2 = self.client.post("/api/journals",
+                                     data=json.dumps(payload2),
+                                     content_type="application/json")
+        self.assertEqual(response2.status_code, 400)
+        res_data = json.loads(response2.data)
+        self.assertEqual(res_data["status"], "error")
+        self.assertIn("already exists", res_data["message"])
+
+    def test_list_journals_and_date_filtering(self):
+        """Verify journal listing and querying entries by specific date."""
+        # Setup: create two journals on separate days
+        payload1 = {
+            "date": "2026-06-08",
+            "title": "Day 1",
+            "content": "Did some reading.",
+            "mood": "Good"
+        }
+        payload2 = {
+            "date": "2026-06-09",
+            "title": "Day 2",
+            "content": "Did some exercise.",
+            "mood": "Excellent"
+        }
+        self.client.post("/api/journals", data=json.dumps(payload1), content_type="application/json")
+        self.client.post("/api/journals", data=json.dumps(payload2), content_type="application/json")
+        
+        # Get all
+        response = self.client.get("/api/journals")
+        self.assertEqual(response.status_code, 200)
+        res_data = json.loads(response.data)
+        self.assertEqual(res_data["count"], 2)
+        # Should be sorted date descending
+        self.assertEqual(res_data["data"][0]["date"], "2026-06-09")
+        self.assertEqual(res_data["data"][1]["date"], "2026-06-08")
+        
+        # Filter by date
+        filter_response = self.client.get("/api/journals?date=2026-06-08")
+        self.assertEqual(filter_response.status_code, 200)
+        filter_data = json.loads(filter_response.data)
+        self.assertEqual(filter_data["count"], 1)
+        self.assertEqual(filter_data["data"][0]["title"], "Day 1")
+
+    def test_update_journal_details(self):
+        """Ensure existing journal entry details can be updated."""
+        import services.journal_service as journal_service
+        # Setup: create journal entry
+        j = journal_service.create_journal(
+            date="2026-06-09",
+            title="Old Title",
+            content="Old content",
+            mood="Neutral"
+        )
+        
+        payload = {
+            "title": "New Title",
+            "content": "New content",
+            "mood": "Good"
+        }
+        response = self.client.put(f"/api/journals/{j['id']}",
+                                   data=json.dumps(payload),
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        res_data = json.loads(response.data)
+        self.assertEqual(res_data["status"], "success")
+        self.assertEqual(res_data["data"]["title"], "New Title")
+        self.assertEqual(res_data["data"]["content"], "New content")
+        self.assertEqual(res_data["data"]["mood"], "Good")
+
+    def test_delete_journal_entry(self):
+        """Ensure deleting a journal removes it from storage."""
+        import services.journal_service as journal_service
+        j = journal_service.create_journal(
+            date="2026-06-09",
+            title="To Delete",
+            content="Reflections to be removed.",
+            mood="Tired"
+        )
+        
+        response = self.client.delete(f"/api/journals/{j['id']}")
+        self.assertEqual(response.status_code, 200)
+        
+        # Check details is now 404
+        check_response = self.client.get(f"/api/journals/{j['id']}")
+        self.assertEqual(check_response.status_code, 404)
+
 if __name__ == "__main__":
     unittest.main()

@@ -1851,3 +1851,205 @@ body {
     flex-shrink: 0;
     padding: 12px 24px;
 }
+
+/* Aura Journal CSS Components */
+.journal-layout {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 25px;
+    align-items: start;
+    margin-top: 15px;
+}
+
+.journal-write-card, .journal-history-card {
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+}
+
+.journal-form-body {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* Mood selector grid & options */
+.mood-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    width: 100%;
+}
+
+.mood-option-btn {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 10px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.mood-option-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.mood-option-btn.active {
+    background: rgba(99, 102, 241, 0.12);
+    border-color: var(--indigo);
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.25), inset 0 0 8px rgba(99, 102, 241, 0.1);
+}
+
+.mood-emoji {
+    font-size: 1.4rem;
+}
+
+.mood-text {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mood-option-btn.active .mood-text {
+    color: #ffffff;
+}
+
+/* Habit link checkboxes */
+.habit-link-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.18);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    max-height: 140px;
+    overflow-y: auto;
+}
+
+.habit-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    user-select: none;
+    min-width: 0;
+}
+
+.habit-checkbox-label input[type="checkbox"] {
+    display: none;
+}
+
+.custom-checkbox {
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+    display: inline-block;
+    position: relative;
+    background: rgba(0, 0, 0, 0.3);
+    transition: var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.habit-checkbox-label input[type="checkbox"]:checked + .custom-checkbox {
+    background: var(--indigo);
+    border-color: var(--indigo);
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+}
+
+.habit-checkbox-label input[type="checkbox"]:checked + .custom-checkbox::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid #ffffff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.checkbox-habit-name {
+    flex-grow: 1;
+}
+
+.habit-checkbox-label:hover {
+    color: #ffffff;
+}
+
+.habit-checkbox-label:hover .custom-checkbox {
+    border-color: rgba(99, 102, 241, 0.5);
+}
+
+/* Journal History List & Scrollbar */
+.journal-history-list {
+    max-height: 520px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.journal-history-list::-webkit-scrollbar {
+    width: 6px;
+}
+.journal-history-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.journal-history-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+.journal-history-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.journal-form-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 5px;
+}
+
+.journal-form-footer .btn {
+    width: fit-content;
+}
+
+.journal-card {
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    transition: var(--transition-smooth);
+}
+
+.journal-card:hover {
+    border-color: var(--card-border-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 1024px) {
+    .journal-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .mood-selector-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .mood-selector-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

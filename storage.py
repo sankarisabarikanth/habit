@@ -9,14 +9,20 @@ class SQLStorage:
     Conforms to the original InMemoryStorage interface to ensure compatibility.
     """
     def __init__(self):
-        # Detect if we are running under a testing framework
+        # Detect if we are running under a testing framework or Vercel
+        is_vercel = os.environ.get("VERCEL") == "1"
         is_testing = (
             "unittest" in sys.modules or 
             "pytest" in sys.modules or 
             os.environ.get("FLASK_ENV") == "testing" or 
             os.environ.get("TESTING") == "true"
         )
-        self.db_path = "habits_test.db" if is_testing else "habits.db"
+        if is_testing:
+            self.db_path = "habits_test.db"
+        elif is_vercel:
+            self.db_path = "/tmp/habits.db"
+        else:
+            self.db_path = "habits.db"
         self._lock = threading.Lock()
         self._init_db()
 
